@@ -32,23 +32,6 @@ For k = 4 To 580
 
 
 
-
-
-' InStr(1, src1.Cells(k, 1), "Regulation (EU)") And
-
-
-
-
-
-
-
-
-
-
-
-'Or getRGB1(Cells(k, 1)) = "212E63"
-
-
     If getRGB1(src1.Cells(k, 1)) = "007EC2" Then
     
   'src1.Cells(k, 1)= Reg ID + Name of the reg
@@ -78,14 +61,17 @@ For k = 4 To 580
             End If
             
             
-            ' title of regulation
+                ' title of regulation - split the cell to get ID and content + the regulatrion titles, usually at the beginning of the content cell
        '------------------------------------- content -----------------------------
        
        
        contentreg = Split(CStr(src1.Cells(k + 1, 1)), Chr(10))
+                'contentreg will be the content of cell next to title
+                
+                
         For w = 1 To UBound(contentreg)
         
-             If Left(contentreg(w), 1) <> "(" Then
+                If Left(contentreg(w), 1) <> "(" Then ' it is then not a new paragraph
         
                    aim.Cells(regn, 4) = aim.Cells(regn, 4) & Chr(10) & contentreg(w)
                     
@@ -100,7 +86,7 @@ For k = 4 To 580
                 
                       If Left(contentreg(w), 2) <> "(i" And Left(contentreg(w), 2) <> "(v" Then
                             
-                            regn = regn + 1
+                        regn = regn + 1 'new line 
                                 aim.Cells(regn, 2) = Split(contentreg(w), " ")(0)
                                 aim.Cells(regn, 4) = Replace(contentreg(w), Split(contentreg(w), " ")(0), "")
                                 
@@ -151,7 +137,7 @@ For k = 4 To 580
    End If
    
    
-   
+            '------------ it checks if there is any use to write next cell 
    
    
     If src1.Cells(k + 1, 1) <> "" And src1.Cells(k + 2, 1) <> "" Then
@@ -161,10 +147,12 @@ For k = 4 To 580
          
          
          k = k + 1
-          '------------------------------------- content -----------------------------
+                    '------------------------------------- content, if the next cell belongs to the preivous reg -----------------------------
        
        
        contentreg = Split(CStr(src1.Cells(k + 1, 1)), Chr(10))
+                    
+                    
         For w = 1 To UBound(contentreg)
         
              If Left(contentreg(w), 1) <> "(" And InStr(contentreg(w), "SUBPART") = 0 Then
@@ -254,7 +242,8 @@ Next
 End Sub
 
 
-Sub getlistofcsr()
+Sub getlistofcsr() 'write the list of CS in the CS sheet
+
 
 
 
@@ -268,34 +257,6 @@ Set src1 = ThisWorkbook.Worksheets("Table 1")
 
 
 
-'-------------------------correction
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 regn = 1
 
@@ -303,7 +264,7 @@ regn = 1
 For k = 4 To 500
 
 
-If getRGB1(src1.Cells(k, 1)) = "212E63" And InStr(1, src1.Cells(k, 1), "Part ") = 0 Then
+        If getRGB1(src1.Cells(k, 1)) = "212E63" And InStr(1, src1.Cells(k, 1), "Part ") = 0 Then 'identify the CS cells
 
 
 
@@ -311,10 +272,10 @@ If getRGB1(src1.Cells(k, 1)) = "212E63" And InStr(1, src1.Cells(k, 1), "Part ") 
 
 
 
-  aim.Cells(regn, 1) = Split(CStr(src1.Cells(k, 1)), " ")(0) & " " & Split(CStr(src1.Cells(k, 1)), " ")(1)
+  aim.Cells(regn, 1) = Split(CStr(src1.Cells(k, 1)), " ")(0) & " " & Split(CStr(src1.Cells(k, 1)), " ")(1) ' ID and Title
    
    
-   If InStr(1, src1.Cells(k, 1), "and") <> 0 Then
+            If InStr(1, src1.Cells(k, 1), "and") <> 0 Then 'if there is a and in the title, avoid missing it by the following code
    
 If Split(CStr(src1.Cells(k, 1)), " ")(2) = "and" Then
 
@@ -330,20 +291,16 @@ End If
 
 
    
-    If InStr(1, aim.Cells(regn, 1), "(") Then
+            If InStr(1, aim.Cells(regn, 1), "(") Then ' avoid useless data in title
+                
             aim.Cells(regn, 1) = Split(aim.Cells(regn, 1), "(")(0)
             
-            
-                
-                    
-                    
-                    
-                
+                 
             
    End If
    
    
-   aim.Cells(regn, 5) = Replace(src1.Cells(k, 1), aim.Cells(regn, 1), "")
+            aim.Cells(regn, 5) = Replace(src1.Cells(k, 1), aim.Cells(regn, 1), "") ' title of the publication without the name and ID, stored in cell 1
    
   
    
@@ -365,26 +322,27 @@ End If
     If InStr(1, Split(src1.Cells(k + 1, 1), Chr(10))(0), "ED Decision") <> 0 Or InStr(1, Split(src1.Cells(k + 1, 1), Chr(10))(0), "Regulation") <> 0 Then
     
     
-    aim.Cells(regn, 5) = aim.Cells(regn, 5) & " - " & Split(src1.Cells(k + 1, 1), Chr(10))(0)
+                aim.Cells(regn, 5) = aim.Cells(regn, 5) & " - " & Split(src1.Cells(k + 1, 1), Chr(10))(0) 
     
-    End If
+            End If ' ad the ED DECISION or REGULATION txt to the title
 
     
 
 
 
-'------------------------------------ content
+            '------------------------------------ content // same way of work as the getlistofreg
 
 
 contentcs = Split(src1.Cells(k + 1, 1), Chr(10))
 
     
 
-If UBound(contentcs) <> 0 Then
+            If UBound(contentcs) <> 0 Then ' check if cell is not empty, avoid errors
 
-For w = 0 To UBound(contentcs)
+                For w = 0 To UBound(contentcs) ' for each line of the cell
 
-    If InStr(1, aim.Cells(regn, 5), contentcs(w)) = 0 And InStr(1, contentcs(w), ")   ") = 0 Then
+                If InStr(1, aim.Cells(regn, 5), contentcs(w)) = 0 And InStr(1, contentcs(w), ")   ") = 0 Then 'if the next line is not a new paragraph, symblised by ")   "
+                    
         aim.Cells(regn, 5) = aim.Cells(regn, 5) & Chr(10) & contentcs(w)
         
     
@@ -462,7 +420,7 @@ End Sub
 
 
 Sub copypate()
-
+' just a quicker way to reset the working file
 
     Sheets("Table 1").Select
     ActiveWindow.SelectedSheets.Delete
@@ -481,13 +439,13 @@ End Sub
 
 
 
-Sub correction()
+        Sub correction() ' list of all corrections 
 
 Set src1 = ThisWorkbook.Worksheets("Table 1")
 
 
   For k = 4 To 500
-  If src1.Cells(k, 1) = "Table 1" Then
+                If src1.Cells(k, 1) = "Table 1" Then ' delete row that is title of a figure
 src1.Cells(k, 1).EntireRow.Delete
 End If
 Next
@@ -497,7 +455,7 @@ For k = 2 To 500
 
 
 
-If InStr(1, src1.Cells(k, 1), "Powered by EASA") Then
+            If InStr(1, src1.Cells(k, 1), "Powered by EASA") Then ' delete the end of page
 
 
     src1.Cells(k + 1, 1).EntireRow.Delete
@@ -518,7 +476,7 @@ For k = 2 To 500
 
 
 
-If InStr(1, src1.Cells(k, 1), "Powered by EASA") Then
+        If InStr(1, src1.Cells(k, 1), "Powered by EASA") Then ' delete the end of page
 
 
     src1.Cells(k + 1, 1).EntireRow.Delete
@@ -538,7 +496,7 @@ For k = 2 To 500
 
 
 
-If Right(CStr(src1.Cells(k, 1)), 1) = ":" And InStr(1, CStr(src1.Cells(k - 1, 1)), "Regulation (EU)") <> 0 Then
+If Right(CStr(src1.Cells(k, 1)), 1) = ":" And InStr(1, CStr(src1.Cells(k - 1, 1)), "Regulation (EU)") <> 0 Then ' merge cells that ends with : 
 
 
 src1.Cells(k - 1, 1) = src1.Cells(k - 1, 1) & Chr(10) & src1.Cells(k, 1) & Chr(10) & src1.Cells(k + 1, 1)
@@ -547,9 +505,6 @@ src1.Cells(k - 1, 1) = src1.Cells(k - 1, 1) & Chr(10) & src1.Cells(k, 1) & Chr(1
 End If
 
 
-'If Right(CStr(src1.Cells(k, 1)), 1) <> "." And InStr(1, src1.Cells(k + 2, 1), ")      ") <> 0 <> "" And InStr(1, src1.Cells(k, 1), ")      ") <> 0 <> "" Then
-
-'Debug.Print k
 
 
 
@@ -558,7 +513,8 @@ End If
 '---------------------------- if reg is at the end of a page
 
 
-If src1.Cells(k, 1) = "" And src1.Cells(k + 1, 1) = "" Then
+    If src1.Cells(k, 1) = "" And src1.Cells(k + 1, 1) = "" Then ' delete useless rows
+        
 src1.Cells(k, 1).EntireRow.Delete
 End If
 
@@ -566,7 +522,7 @@ End If
 
 
 
-If src1.Cells(k, 1) = 0 Or src1.Cells(k, 1) = "Table 1" And src1.Cells(k + 1, 1) <> "" Then
+    If src1.Cells(k, 1) = 0 Or src1.Cells(k, 1) = "Table 1" And src1.Cells(k + 1, 1) <> "" Then  ' delete useless rows
 src1.Cells(k, 1).EntireRow.Delete
 End If
 
@@ -578,7 +534,7 @@ Next
 For k = 4 To 500
 If Right(src1.Cells(k, 1), 1) <> "." And InStr(src1.Cells(k, 1), ")     ") <> 0 And InStr(src1.Cells(k + 1, 1), ")     ") <> 0 And InStr(1, src1.Cells(k, 1), src1.Cells(k + 1, 1)) = 0 Then
 
-src1.Cells(k, 1) = src1.Cells(k, 1) & Chr(10) & src1.Cells(k + 1, 1)
+    src1.Cells(k, 1) = src1.Cells(k, 1) & Chr(10) & src1.Cells(k + 1, 1) ' merge unfinished content
 src1.Cells(k + 1, 1).EntireRow.Delete
 
 
@@ -591,7 +547,7 @@ For k = 2 To 500
 
 
 
-If Right(CStr(src1.Cells(k, 1)), 1) = "," And InStr(1, CStr(src1.Cells(k, 1)), src1.Cells(k + 1, 1)) = 0 Then
+If Right(CStr(src1.Cells(k, 1)), 1) = "," And InStr(1, CStr(src1.Cells(k, 1)), src1.Cells(k + 1, 1)) = 0 Then ' merge unfinished content, that ends with ","
 
 
 src1.Cells(k, 1) = src1.Cells(k, 1) & src1.Cells(k + 1, 1)
@@ -612,7 +568,7 @@ For k = 2 To 500
 
 
 
-If Right(CStr(src1.Cells(k, 1)), 3) = "and" And InStr(1, CStr(src1.Cells(k, 1)), src1.Cells(k + 1, 1)) = 0 Then
+If Right(CStr(src1.Cells(k, 1)), 3) = "and" And InStr(1, CStr(src1.Cells(k, 1)), src1.Cells(k + 1, 1)) = 0 Then '  merge unfinished content, that ends with "and"
 
 
 src1.Cells(k, 1) = src1.Cells(k, 1) & src1.Cells(k + 1, 1)
@@ -632,7 +588,7 @@ For k = 2 To 500
 
 
 
-    If src1.Cells(k, 1) = "" And src1.Cells(k + 1, 1) = "" Then
+If src1.Cells(k, 1) = "" And src1.Cells(k + 1, 1) = "" Then ' used to delete tables
     j = 1
         Do Until src1.Cells(k, 1) <> "" Or j = 10
             src1.Cells(k, 1).EntireRow.Delete
@@ -648,7 +604,7 @@ For k = 2 To 500
 
 If InStr(1, src1.Cells(k, 1), ")   ") And InStr(1, src1.Cells(k + 1, 1), ")   ") And getRGB1(src1.Cells(k, 1)) = "FFFFFF" And getRGB1(src1.Cells(k + 1, 1)) = "FFFFFF" And InStr(1, src1.Cells(k, 1), src1.Cells(k + 1, 1)) = 0 Then
 
-src1.Cells(k, 1) = src1.Cells(k, 1) & Chr(10) & src1.Cells(k + 1, 1)
+src1.Cells(k, 1) = src1.Cells(k, 1) & Chr(10) & src1.Cells(k + 1, 1)  used to delete tables
 
 src1.Cells(k + 1, 1).EntireRow.Delete
 End If
@@ -660,7 +616,8 @@ End Sub
 
 
 
-Sub getlistofguid()
+Sub getlistofguid() ' same way of wotrking that others
+
 
 
 Set src1 = ThisWorkbook.Worksheets("Table 1")
